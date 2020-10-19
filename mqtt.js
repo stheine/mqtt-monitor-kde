@@ -106,6 +106,11 @@ const sound = async function(tone) {
   // #########################################################################
   // PID file
   const pidFile = untildify('~/.mqtt.pid');
+
+  if(await fsExtra.pathExists(pidFile)) {
+    await fsExtra.remove(pidFile);
+  }
+
   const pidFileHandle = npid.create(pidFile);
 
   pidFileHandle.removeOnExit();
