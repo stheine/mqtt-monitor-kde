@@ -10,42 +10,16 @@ const readline   = require('readline');
 const execa      = require('execa');
 const fsExtra    = require('fs-extra');
 const mqtt       = require('async-mqtt');
-const moment     = require('moment');
 const npid       = require('npid');
 const untildify  = require('untildify');
 const windowSize = require('window-size');
+
+const logger     = require('./logger');
 
 // ###########################################################################
 // Globals
 
 let mqttClient;
-
-// ###########################################################################
-// Logging
-
-const logger = {
-  info(msg, params) {
-    if(params) {
-      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')} INFO`, msg, params);
-    } else {
-      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')} INFO`, msg);
-    }
-  },
-  warn(msg, params) {
-    if(params) {
-      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')} WARN`, msg, params);
-    } else {
-      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')} WARN`, msg);
-    }
-  },
-  error(msg, params) {
-    if(params) {
-      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')} ERROR`, msg, params);
-    } else {
-      console.log(`${moment().format('YYYY-MM-DD HH:mm:ss')} ERROR`, msg);
-    }
-  },
-};
 
 // ###########################################################################
 // Process handling
@@ -130,6 +104,14 @@ const sound = async function(tone) {
   // Init MQTT connection
   mqttClient = await mqtt.connectAsync('tcp://192.168.6.7:1883');
 
+  mqttClient.on('connect', () => logger.info('mqtt.connect'));
+  mqttClient.on('reconnect', () => logger.info('mqtt.reconnect'));
+  mqttClient.on('close', () => logger.info('mqtt.close'));
+  mqttClient.on('disconnect', () => logger.info('mqtt.disconnect'));
+  mqttClient.on('offline', () => logger.info('mqtt.offline'));
+  mqttClient.on('error', error => logger.info('mqtt.error', error));
+  mqttClient.on('end', () => logger.info('mqtt.end'));
+
   mqttClient.on('message', async(topic, messageBuffer) => {
     const messageRaw = messageBuffer.toString();
 
@@ -146,13 +128,16 @@ const sound = async function(tone) {
         case 'FritzBox/callMonitor/call':
         case 'FritzBox/callMonitor/hangUp':
         case 'FritzBox/callMonitor/pickUp':
+        case 'FritzBox/speedtest/result':
         case 'FritzBox/tele/SENSOR':
-        case 'jalousie/stat/dht22':
-        case 'jalousie/stat/rain':
-        case 'jalousie/stat/sun':
-        case 'jalousie/stat/wind':
-        case 'jalousie/stat/windAlarm':
+        case 'Jalousie/cmnd/full_down':
+        case 'Jalousie/cmnd/full_up':
+        case 'Jalousie/cmnd/stop':
+        case 'Jalousie/tele/SENSOR':
+        case 'Sonne/tele/SENSOR':
         case 'Stromzaehler/tele/SENSOR':
+        case 'tasmota/discovery/DC4F2247E70B/config':
+        case 'tasmota/discovery/DC4F2247E70B/sensors':
         case 'tasmota/solar/cmnd/POWER':
         case 'tasmota/solar/stat/POWER':
         case 'tasmota/solar/stat/RESULT':
@@ -163,8 +148,17 @@ const sound = async function(tone) {
         case 'tasmota/spuelmaschine/cmnd/POWER':
         case 'tasmota/spuelmaschine/stat/POWER':
         case 'tasmota/spuelmaschine/stat/RESULT':
+        case 'tasmota/spuelmaschine/tele/INFO1':
+        case 'tasmota/spuelmaschine/tele/INFO2':
+        case 'tasmota/spuelmaschine/tele/INFO3':
         case 'tasmota/spuelmaschine/tele/LWT':
         case 'tasmota/spuelmaschine/tele/STATE':
+        case 'tasmota/steckdose/cmnd/POWER':
+        case 'tasmota/steckdose/stat/POWER':
+        case 'tasmota/steckdose/stat/RESULT':
+        case 'tasmota/steckdose/tele/INFO1':
+        case 'tasmota/steckdose/tele/INFO2':
+        case 'tasmota/steckdose/tele/INFO3':
         case 'tasmota/steckdose/tele/LWT':
         case 'tasmota/steckdose/tele/STATE':
         case 'tasmota/waschmaschine/cmnd/LedPower2':
@@ -174,6 +168,7 @@ const sound = async function(tone) {
         case 'tasmota/waschmaschine/tele/LWT':
         case 'tasmota/waschmaschine/tele/STATE':
         case 'Vito/tele/SENSOR':
+        case 'Wind/tele/SENSOR':
         case 'Wohnzimmer/tele/SENSOR':
         case 'Zigbee/bridge/config':
         case 'Zigbee/bridge/config/devices':
@@ -246,6 +241,23 @@ const sound = async function(tone) {
           ]);
           break;
         }
+
+        case 'Regen/tele/SENSOR':
+          await Promise.all([
+            popup('Regen', '', 'ringer.png'),
+            // sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
+          ]);
+          break;
+
+//        case 'Wind/tele/SENSOR':
+//          if(message.level > 1) {
+//            logger.info(topic, message);
+//            await Promise.all([
+//              popup('Wind', '', 'ringer.png'),
+//              // sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
+//            ]);
+//          }
+//          break;
 
         default:
           logger.error(`Unhandled topic '${topic}'`, message);
