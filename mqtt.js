@@ -2,19 +2,19 @@
 
 'use strict';
 
-/* eslint-disable no-console */
-/* eslint-disable no-constant-condition */
+const path        = require('path');
+const readline    = require('readline');
 
-const readline   = require('readline');
+const delay       = require('delay');
+const execa       = require('execa');
+const fsExtra     = require('fs-extra');
+const millisecond = require('millisecond');
+const mqtt        = require('async-mqtt');
+const npid        = require('npid');
+const untildify   = require('untildify');
+const windowSize  = require('window-size');
 
-const execa      = require('execa');
-const fsExtra    = require('fs-extra');
-const mqtt       = require('async-mqtt');
-const npid       = require('npid');
-const untildify  = require('untildify');
-const windowSize = require('window-size');
-
-const logger     = require('./logger');
+const logger      = require('./logger');
 
 // ###########################################################################
 // Globals
@@ -53,23 +53,20 @@ const popup = async function(title, detail, icon) {
 };
 
 const sound = async function(tone) {
-  await fsExtra.appendFile('/home/stheine/.config/gmusicbrowser/gmusicbrowser.fifo', 'Pause');
+  const status = (await fsExtra.readFile('/home/stheine/.mp3_playing', {encoding: 'utf8'})).trim();
 
-  const ffmpegProcess = execa('/usr/bin/ffmpeg', ['-i', tone, '-f', 'wav', '-']);
-  const aplayProcess  = execa('/usr/bin/aplay', ['-D', 'plughw:CARD=Device,DEV=0']);
+  // console.log({status});
 
-  ffmpegProcess.stdout.pipe(aplayProcess.stdin);
-
-  // ffmpeg -i /usr/share/sounds/Oxygen-Im-Phone-Ring.ogg -f wav - |
-  // aplay -D plughw:CARD=Device,DEV=0
-
-  const results = await Promise.all([ffmpegProcess, aplayProcess]);
-
-  if(results[0].exitCode) {
-    logger.error('ffmpeg Error', results[0].stderr);
+  if(!['PAUSED', 'STOPPED'].includes(status)) {
+    await fsExtra.appendFile('/home/stheine/.config/gmusicbrowser/gmusicbrowser.fifo', 'Pause');
+    await delay(millisecond('0.2 seconds'));
   }
-  if(results[1].exitCode) {
-    logger.error('aplay Error', results[1].stderr);
+
+  // console.log({tone});
+  await execa('/usr/bin/cvlc', ['--play-and-exit', path.join(__dirname, tone)]);
+
+  if(!['PAUSED', 'STOPPED'].includes(status)) {
+    await fsExtra.appendFile('/home/stheine/.config/gmusicbrowser/gmusicbrowser.fifo', 'Play');
   }
 };
 
@@ -189,13 +186,6 @@ const sound = async function(tone) {
           // ignore
           break;
 
-        case 'testNotify':
-          await Promise.all([
-            popup('Haustür Klingel', '', 'doorbell.png'),
-            sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
-          ]);
-          break;
-
         case 'Zigbee/Haustür Klingel': {
 //          logger.info('Zigbee/Haustür Klingel', message);
 
@@ -206,7 +196,7 @@ const sound = async function(tone) {
 
             await Promise.all([
               popup('Haustür Klingel', '', 'doorbell.png'),
-              sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
+              sound('./doorbell.mp3'),
             ]);
           }
           break;
@@ -237,15 +227,21 @@ const sound = async function(tone) {
 
           await Promise.all([
             popup(popupParam1, popupParam2, 'ringer.png'),
-            sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
+            sound('./ringer.mp3'),
           ]);
           break;
         }
 
+        case 'Mqtt/cmnd/alert':
+          await Promise.all([
+            popup(JSON.stringify(message), message.tone, 'ringer.png'),
+            sound(`./${message.tone || 'alert'}.mp3`),
+          ]);
+          break;
+
         case 'Regen/tele/SENSOR':
           await Promise.all([
             popup('Regen', '', 'ringer.png'),
-            // sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
           ]);
           break;
 
@@ -254,7 +250,6 @@ const sound = async function(tone) {
 //            logger.info(topic, message);
 //            await Promise.all([
 //              popup('Wind', '', 'ringer.png'),
-//              // sound('/usr/share/sounds/Oxygen-Im-Phone-Ring.ogg'),
 //            ]);
 //          }
 //          break;
@@ -275,12 +270,14 @@ const sound = async function(tone) {
     output: process.stdout,
   });
 
+  // eslint-disable-next-line no-constant-condition
   while(true) {
     await new Promise(resolve => {
       line.question('', resolve);
     });
 
     for(let i = 0; i < windowSize.get().height; i++) {
+      // eslint-disable-next-line no-console
       console.log('');
     }
   }
