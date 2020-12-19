@@ -129,6 +129,7 @@ const sound = async function(tone) {
         case 'FritzBox/tele/SENSOR':
         case 'Jalousie/cmnd/full_down':
         case 'Jalousie/cmnd/full_up':
+        case 'Jalousie/cmnd/shadow':
         case 'Jalousie/cmnd/stop':
         case 'Jalousie/tele/SENSOR':
         case 'Sonne/tele/SENSOR':
@@ -175,14 +176,15 @@ const sound = async function(tone) {
         case 'Zigbee/bridge/networkmap':
         case 'Zigbee/bridge/networkmap/graphviz':
         case 'Zigbee/bridge/networkmap/raw':
+        case 'Zigbee/bridge/ota_update/check':
         case 'Zigbee/bridge/state':
         case 'Zigbee/FensterSensor Büro':
         case 'Zigbee/FensterSensor Garage':
         case 'Zigbee/FensterSensor Toilette':
         case 'Zigbee/FensterSensor 1':
-        case 'Zigbee/LuftSensor':
-        case 'Zigbee/Repeater oben':
-        case 'Zigbee/Repeater unten':
+        case 'Zigbee/LuftSensor Büro':
+        case 'Zigbee/Repeater Büro':
+        case 'Zigbee/Repeater EG':
           // ignore
           break;
 
@@ -192,7 +194,7 @@ const sound = async function(tone) {
           const contact = message.contact;
 
           if(!contact) {
-            logger.info('klingelt');
+            logger.info('Haustür klingelt');
 
             await Promise.all([
               popup('Haustür Klingel', '', 'doorbell.png'),
