@@ -110,6 +110,10 @@ const sound = async function(tone) {
   mqttClient.on('end', () => logger.info('mqtt.end'));
 
   mqttClient.on('message', async(topic, messageBuffer) => {
+    if(topic.startsWith('tasmota/discovery/')) {
+      return;
+    }
+
     const messageRaw = messageBuffer.toString();
 
     try {
@@ -132,10 +136,15 @@ const sound = async function(tone) {
         case 'Jalousie/cmnd/shadow':
         case 'Jalousie/cmnd/stop':
         case 'Jalousie/tele/SENSOR':
+        case 'Regen/tele/SENSOR':
         case 'Sonne/tele/SENSOR':
         case 'Stromzaehler/tele/SENSOR':
-        case 'tasmota/discovery/DC4F2247E70B/config':
-        case 'tasmota/discovery/DC4F2247E70B/sensors':
+        case 'tasmota/espco2/cmnd/POWER':
+        case 'tasmota/espco2/tele/INFO1':
+        case 'tasmota/espco2/tele/INFO2':
+        case 'tasmota/espco2/tele/LWT':
+        case 'tasmota/espco2/tele/SENSOR':
+        case 'tasmota/espco2/tele/STATE':
         case 'tasmota/solar/cmnd/POWER':
         case 'tasmota/solar/stat/POWER':
         case 'tasmota/solar/stat/RESULT':
@@ -241,20 +250,12 @@ const sound = async function(tone) {
           ]);
           break;
 
-        case 'Regen/tele/SENSOR':
+        case 'tasmota/espco2/tele/INFO3':
+          logger.warn('ESP/CO2 startup', message.RestartReason);
           await Promise.all([
-            popup('Regen', '', 'ringer.png'),
+            popup('ESP/CO2 startup', message.RestartReason, 'power.png'),
           ]);
           break;
-
-//        case 'Wind/tele/SENSOR':
-//          if(message.level > 1) {
-//            logger.info(topic, message);
-//            await Promise.all([
-//              popup('Wind', '', 'ringer.png'),
-//            ]);
-//          }
-//          break;
 
         default:
           logger.error(`Unhandled topic '${topic}'`, message);
