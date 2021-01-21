@@ -63,7 +63,7 @@ const sound = async function(tone) {
   }
 
   // console.log({tone});
-  await execa('/usr/bin/cvlc', ['--play-and-exit', path.join(__dirname, tone)]);
+  await execa('/usr/bin/cvlc', ['--gain', '0.3', '--play-and-exit', path.join(__dirname, tone)]);
 
   if(!['PAUSED', 'STOPPED'].includes(status)) {
     await fsExtra.appendFile('/home/stheine/.config/gmusicbrowser/gmusicbrowser.fifo', 'Play');
@@ -143,7 +143,6 @@ const sound = async function(tone) {
         case 'tasmota/espco2/tele/INFO1':
         case 'tasmota/espco2/tele/INFO2':
         case 'tasmota/espco2/tele/LWT':
-        case 'tasmota/espco2/tele/SENSOR':
         case 'tasmota/espco2/tele/STATE':
         case 'tasmota/solar/cmnd/POWER':
         case 'tasmota/solar/stat/POWER':
@@ -151,8 +150,12 @@ const sound = async function(tone) {
         case 'tasmota/solar/tele/LWT':
         case 'tasmota/solar/tele/SENSOR':
         case 'tasmota/solar/tele/STATE':
+        case 'tasmota/spuelmaschine/cmnd/LedMask':
+        case 'tasmota/spuelmaschine/cmnd/LedPower1':
         case 'tasmota/spuelmaschine/cmnd/LedPower2':
+        case 'tasmota/spuelmaschine/cmnd/LedState':
         case 'tasmota/spuelmaschine/cmnd/POWER':
+        case 'tasmota/spuelmaschine/cmnd/SetOption31':
         case 'tasmota/spuelmaschine/stat/POWER':
         case 'tasmota/spuelmaschine/stat/RESULT':
         case 'tasmota/spuelmaschine/tele/INFO1':
@@ -168,8 +171,12 @@ const sound = async function(tone) {
         case 'tasmota/steckdose/tele/INFO3':
         case 'tasmota/steckdose/tele/LWT':
         case 'tasmota/steckdose/tele/STATE':
+        case 'tasmota/waschmaschine/cmnd/LedMask':
+        case 'tasmota/waschmaschine/cmnd/LedPower1':
         case 'tasmota/waschmaschine/cmnd/LedPower2':
+        case 'tasmota/waschmaschine/cmnd/LedState':
         case 'tasmota/waschmaschine/cmnd/POWER':
+        case 'tasmota/waschmaschine/cmnd/SetOption31':
         case 'tasmota/waschmaschine/stat/POWER':
         case 'tasmota/waschmaschine/stat/RESULT':
         case 'tasmota/waschmaschine/tele/LWT':
@@ -254,6 +261,23 @@ const sound = async function(tone) {
           logger.warn('ESP/CO2 startup', message.RestartReason);
           await Promise.all([
             popup('ESP/CO2 startup', message.RestartReason, 'power.png'),
+          ]);
+          break;
+
+        case 'tasmota/espco2/tele/SENSOR':
+          // logger.warn('ESP/CO2 sensor', message);
+          if(Number(message.MHZ19B.CarbonDioxide) > 1000) {
+            await Promise.all([
+              popup('Hohe CO2 Konzentration - Lüften', message.MHZ19B.CarbonDioxide, 'air.png'),
+            ]);
+          }
+          break;
+
+        case 'mqtt/test/notification':
+          logger.warn('test', message);
+          await Promise.all([
+            popup('test', message, 'alert.png'),
+            sound(`./${message || 'alert'}.mp3`),
           ]);
           break;
 

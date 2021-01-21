@@ -1,10 +1,15 @@
 #!/bin/sh
 
 CHECKPID=`cat ~/.mqtt.pid 2>/dev/null`
-kill -0 $CHECKPID
-if [ $? = 0 ]; then
-  # Already running
-  exit 0
+if [ -n "$CHECKPID" ]; then
+  kill -0 $CHECKPID
+  if [ $? = 0 ]; then
+    PROCESS=`ps -ef | grep -e " $CHECKPID .*mqtt.sh" | grep -v grep`
+    if [ -n "$PROCESS" ]; then
+      # Already running
+      exit 0
+    fi
+  fi
 fi
 
 
