@@ -144,6 +144,12 @@ const sound = async function(tone) {
         case 'tasmota/espco2/tele/INFO2':
         case 'tasmota/espco2/tele/LWT':
         case 'tasmota/espco2/tele/STATE':
+        case 'tasmota/espfeinstaub/cmnd/POWER':
+        case 'tasmota/espfeinstaub/tele/INFO1':
+        case 'tasmota/espfeinstaub/tele/INFO2':
+        case 'tasmota/espfeinstaub/tele/LWT':
+        case 'tasmota/espfeinstaub/tele/SENSOR':
+        case 'tasmota/espfeinstaub/tele/STATE':
         case 'tasmota/solar/cmnd/POWER':
         case 'tasmota/solar/stat/POWER':
         case 'tasmota/solar/stat/RESULT':
@@ -271,6 +277,13 @@ const sound = async function(tone) {
               popup('Hohe CO2 Konzentration - Lüften', message.MHZ19B.CarbonDioxide, 'air.png'),
             ]);
           }
+          break;
+
+        case 'tasmota/espfeinstaub/tele/INFO3':
+          logger.warn('ESP/Feinstaub startup', message.RestartReason);
+          await Promise.all([
+            popup('ESP/Feinstaub startup', message.RestartReason, 'power.png'),
+          ]);
           break;
 
         case 'mqtt/test/notification':
