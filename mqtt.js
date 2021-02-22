@@ -138,21 +138,33 @@ const sound = async function(tone) {
         case 'Jalousie/tele/SENSOR':
         case 'Regen/tele/SENSOR':
         case 'Sonne/tele/SENSOR':
-        case 'Stromzaehler/tele/SENSOR':
+        case 'strom/tele/SENSOR':
         case 'tasmota/espco2/cmnd/POWER':
         case 'tasmota/espco2/tele/INFO1':
         case 'tasmota/espco2/tele/INFO2':
+        case 'tasmota/espco2/tele/INFO3':
         case 'tasmota/espco2/tele/LWT':
         case 'tasmota/espco2/tele/STATE':
         case 'tasmota/espfeinstaub/cmnd/POWER':
         case 'tasmota/espfeinstaub/tele/INFO1':
         case 'tasmota/espfeinstaub/tele/INFO2':
+        case 'tasmota/espfeinstaub/tele/INFO3':
         case 'tasmota/espfeinstaub/tele/LWT':
         case 'tasmota/espfeinstaub/tele/SENSOR':
         case 'tasmota/espfeinstaub/tele/STATE':
+        case 'tasmota/espstrom/cmnd/POWER':
+        case 'tasmota/espstrom/tele/INFO1':
+        case 'tasmota/espstrom/tele/INFO2':
+        case 'tasmota/espstrom/tele/INFO3':
+        case 'tasmota/espstrom/tele/LWT':
+        case 'tasmota/espstrom/tele/SENSOR':
+        case 'tasmota/espstrom/tele/STATE':
         case 'tasmota/solar/cmnd/POWER':
         case 'tasmota/solar/stat/POWER':
         case 'tasmota/solar/stat/RESULT':
+        case 'tasmota/solar/tele/INFO1':
+        case 'tasmota/solar/tele/INFO2':
+        case 'tasmota/solar/tele/INFO3':
         case 'tasmota/solar/tele/LWT':
         case 'tasmota/solar/tele/SENSOR':
         case 'tasmota/solar/tele/STATE':
@@ -185,20 +197,30 @@ const sound = async function(tone) {
         case 'tasmota/waschmaschine/cmnd/SetOption31':
         case 'tasmota/waschmaschine/stat/POWER':
         case 'tasmota/waschmaschine/stat/RESULT':
+        case 'tasmota/waschmaschine/tele/INFO1':
+        case 'tasmota/waschmaschine/tele/INFO2':
+        case 'tasmota/waschmaschine/tele/INFO3':
         case 'tasmota/waschmaschine/tele/LWT':
         case 'tasmota/waschmaschine/tele/STATE':
         case 'Vito/tele/SENSOR':
+        case 'volumio/stat/pushState':
         case 'Wind/tele/SENSOR':
         case 'Wohnzimmer/tele/SENSOR':
         case 'Zigbee/bridge/config':
         case 'Zigbee/bridge/config/devices':
         case 'Zigbee/bridge/config/devices/get':
         case 'Zigbee/bridge/config/permit_join':
+        case 'Zigbee/bridge/devices':
+        case 'Zigbee/bridge/groups':
+        case 'Zigbee/bridge/info':
         case 'Zigbee/bridge/log':
+        case 'Zigbee/bridge/logging':
         case 'Zigbee/bridge/networkmap':
         case 'Zigbee/bridge/networkmap/graphviz':
         case 'Zigbee/bridge/networkmap/raw':
         case 'Zigbee/bridge/ota_update/check':
+        case 'Zigbee/bridge/response/device/ota_update/check':
+        case 'Zigbee/bridge/response/networkmap':
         case 'Zigbee/bridge/state':
         case 'Zigbee/FensterSensor Büro':
         case 'Zigbee/FensterSensor Garage':
@@ -263,13 +285,6 @@ const sound = async function(tone) {
           ]);
           break;
 
-        case 'tasmota/espco2/tele/INFO3':
-          logger.warn('ESP/CO2 startup', message.RestartReason);
-          await Promise.all([
-            popup('ESP/CO2 startup', message.RestartReason, 'power.png'),
-          ]);
-          break;
-
         case 'tasmota/espco2/tele/SENSOR':
           // logger.warn('ESP/CO2 sensor', message);
           if(Number(message.MHZ19B.CarbonDioxide) > 1000) {
@@ -277,13 +292,6 @@ const sound = async function(tone) {
               popup('Hohe CO2 Konzentration - Lüften', message.MHZ19B.CarbonDioxide, 'air.png'),
             ]);
           }
-          break;
-
-        case 'tasmota/espfeinstaub/tele/INFO3':
-          logger.warn('ESP/Feinstaub startup', message.RestartReason);
-          await Promise.all([
-            popup('ESP/Feinstaub startup', message.RestartReason, 'power.png'),
-          ]);
           break;
 
         case 'mqtt/test/notification':
@@ -295,7 +303,7 @@ const sound = async function(tone) {
           break;
 
         default:
-          logger.error(`Unhandled topic '${topic}'`, message);
+          logger.error(`Unhandled topic '${topic}'`, message || messageRaw);
           break;
       }
     } catch(err) {
