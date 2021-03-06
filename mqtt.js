@@ -153,6 +153,8 @@ const sound = async function(tone) {
         case 'tasmota/espfeinstaub/tele/SENSOR':
         case 'tasmota/espfeinstaub/tele/STATE':
         case 'tasmota/espstrom/cmnd/POWER':
+        case 'tasmota/espstrom/cmnd/TelePeriod':
+        case 'tasmota/espstrom/stat/RESULT':
         case 'tasmota/espstrom/tele/INFO1':
         case 'tasmota/espstrom/tele/INFO2':
         case 'tasmota/espstrom/tele/INFO3':
@@ -202,7 +204,8 @@ const sound = async function(tone) {
         case 'tasmota/waschmaschine/tele/INFO3':
         case 'tasmota/waschmaschine/tele/LWT':
         case 'tasmota/waschmaschine/tele/STATE':
-        case 'Vito/tele/SENSOR':
+        case 'vito/tele/LWT':
+        case 'vito/tele/SENSOR':
         case 'volumio/stat/pushState':
         case 'Wind/tele/SENSOR':
         case 'Wohnzimmer/tele/SENSOR':
