@@ -53,7 +53,7 @@ const popup = async function(title, detail, icon) {
 };
 
 const sound = async function(tone) {
-  const status = (await fsExtra.readFile('/home/stheine/.mp3_playing', {encoding: 'utf8'})).trim();
+  const status = (await fsExtra.readFile('/home/stheine/.playing', {encoding: 'utf8'})).trim();
 
   // console.log({status});
 
@@ -121,11 +121,12 @@ const sound = async function(tone) {
 
       try {
         message = JSON.parse(messageRaw);
-      } catch(err) {
+      } catch {
         // ignore
       }
 
       switch(topic) {
+        case 'esp32-wasser/zaehlerstand':
         case 'FritzBox/callMonitor/call':
         case 'FritzBox/callMonitor/hangUp':
         case 'FritzBox/callMonitor/pickUp':
@@ -152,6 +153,7 @@ const sound = async function(tone) {
         case 'tasmota/espfeinstaub/tele/LWT':
         case 'tasmota/espfeinstaub/tele/SENSOR':
         case 'tasmota/espfeinstaub/tele/STATE':
+        case 'tasmota/espstrom/cmnd/LedPower1':
         case 'tasmota/espstrom/cmnd/POWER':
         case 'tasmota/espstrom/cmnd/TelePeriod':
         case 'tasmota/espstrom/stat/RESULT':
@@ -214,6 +216,7 @@ const sound = async function(tone) {
         case 'Zigbee/bridge/config/devices/get':
         case 'Zigbee/bridge/config/permit_join':
         case 'Zigbee/bridge/devices':
+        case 'Zigbee/bridge/extensions':
         case 'Zigbee/bridge/groups':
         case 'Zigbee/bridge/info':
         case 'Zigbee/bridge/log':
@@ -233,6 +236,12 @@ const sound = async function(tone) {
         case 'Zigbee/Repeater Büro':
         case 'Zigbee/Repeater EG':
           // ignore
+          break;
+
+        case 'esp32-wasser/error':
+          if(message) {
+            logger.info('esp32-wasser/error', message);
+          }
           break;
 
         case 'Zigbee/Haustür Klingel': {
