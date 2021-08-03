@@ -2,29 +2,40 @@
 
 'use strict';
 
-const path        = require('path');
-const readline    = require('readline');
+const childProcess = require('child_process');
+const path         = require('path');
+const readline     = require('readline');
 
-const delay       = require('delay');
-const execa       = require('execa');
-const fsExtra     = require('fs-extra');
-const millisecond = require('millisecond');
-const mqtt        = require('async-mqtt');
-const npid        = require('npid');
-const untildify   = require('untildify');
-const windowSize  = require('window-size');
+const _            = require('lodash');
+const delay        = require('delay');
+const execa        = require('execa');
+const fsExtra      = require('fs-extra');
+const imaps        = require('imap-simple');
+const millisecond  = require('millisecond');
+const mqtt         = require('async-mqtt');
+const npid         = require('npid');
+const untildify    = require('untildify');
+const windowSize   = require('window-size');
 
-const logger      = require('./logger');
+const logger       = require('./logger');
+
+const imapConfig   = require('/mnt/qnap_linux/data/imap/config.js');
+const vpnConfig    = require('/mnt/qnap_linux/data/vpn/config.js');
 
 // ###########################################################################
 // Globals
 
+let imapClient;
 let mqttClient;
 
 // ###########################################################################
 // Process handling
 
 const stopProcess = async function() {
+  if(imapClient) {
+    imapClient.end();
+    imapClient = undefined;
+  }
   if(mqttClient) {
     await mqttClient.end();
     mqttClient = undefined;
@@ -325,6 +336,78 @@ const sound = async function(tone) {
 
   await mqttClient.subscribe('#');
 
+  // #########################################################################
+  // Connect to mail server to handle incoming mail
+  const {host, password, port, user} = imapConfig;
+
+  imapClient = await imaps.connect({
+    imap: {
+  //        debug:       console.log,
+      user,
+      password,
+      host,
+      port,
+      tls:         true,
+      authTimeout: 25000,
+      connTimeout: 1000,
+    },
+    async onmail() {
+      const mails = await imapClient.search(['UNSEEN'], {bodies: ['HEADER', 'TEXT'], markSeen: true});
+
+      if(!mails.length) {
+        return;
+      }
+
+      logger.debug('OnMail event');
+
+      // logger.debug({mails});
+      for(const mail of mails) {
+        const {parts} = mail;
+        const header = _.find(parts, {which: 'HEADER'}).body;
+        const from = header.from.join(',');
+        const subject = header.subject.join(',');
+        const to = header.to.join(',');
+        const text = _.find(parts, {which: 'TEXT'}).body.trim();
+
+        logger.debug({from, to, subject, text});
+
+        const vpnProcess = childProcess.spawn('/usr/bin/sudo', [
+          '/usr/sbin/openconnect',
+          `--authgroup=${vpnConfig.authgroup}`,
+          `--protocol=${vpnConfig.protocol}`,
+          `--user=${vpnConfig.user}`,
+          vpnConfig.server,
+        ]);
+
+        vpnProcess.stderr.on('data', data => {
+          const dataString = data.toString().trim();
+
+          logger.debug(dataString);
+
+          if(dataString.endsWith('Domain ID:')) {
+            logger.debug('  DOMAIN REQUEST, answer');
+            vpnProcess.stdin.write(`${vpnConfig.domain}\n`);
+          } else if(dataString.endsWith('Domain Password:')) {
+            logger.debug('  PASSWORD REQUEST, answer');
+            vpnProcess.stdin.write(`${vpnConfig.password}\n`);
+          } else if(dataString.endsWith('Please enter response:')) {
+            logger.debug('  TOKEN REQUEST, answer');
+            vpnProcess.stdin.write(`${text}\n`);
+          }
+        });
+        vpnProcess.stdout.on('data', data => {
+          const dataString = data.toString().trim();
+
+          logger.debug(dataString);
+        });
+      }
+    },
+  });
+
+  await imapClient.openBox('INBOX');
+
+  // #########################################################################
+  // Blank screen on Enter
   const line = readline.createInterface({
     input:  process.stdin,
     output: process.stdout,
