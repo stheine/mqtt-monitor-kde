@@ -2,7 +2,6 @@
 
 'use strict';
 
-const childProcess = require('child_process');
 const path         = require('path');
 const readline     = require('readline');
 
@@ -17,10 +16,11 @@ const npid         = require('npid');
 const untildify    = require('untildify');
 const windowSize   = require('window-size');
 
+const {connect}    = require('./vpn');
 const logger       = require('./logger');
+const {sendMail}   = require('./mail');
 
 const imapConfig   = require('/mnt/qnap_linux/data/imap/config.js');
-const vpnConfig    = require('/mnt/qnap_linux/data/vpn/config.js');
 
 // ###########################################################################
 // Globals
@@ -55,7 +55,7 @@ const popup = async function(title, detail, icon) {
   const {exitCode, stderr} = await execa('/usr/bin/kdialog', [
     '--passivepopup', detail, 15,
     '--title', title,
-    '--icon', `/home/stheine/js/mqtt/${icon}`,
+    '--icon', path.join(__dirname, `icons/${icon}`),
   ]);
 
   if(exitCode) {
@@ -64,12 +64,12 @@ const popup = async function(title, detail, icon) {
 };
 
 const sound = async function(tone) {
-  const status = (await fsExtra.readFile('/home/stheine/.playing', {encoding: 'utf8'})).trim();
+  const status = (await fsExtra.readFile(untildify('~/.playing'), {encoding: 'utf8'})).trim();
 
   // console.log({status});
 
   if(!['PAUSED', 'STOPPED'].includes(status)) {
-    await fsExtra.appendFile('/home/stheine/.config/gmusicbrowser/gmusicbrowser.fifo', 'Pause');
+    await fsExtra.appendFile(untildify('~/.config/gmusicbrowser/gmusicbrowser.fifo'), 'Pause');
     await delay(millisecond('0.2 seconds'));
   }
 
@@ -77,7 +77,7 @@ const sound = async function(tone) {
   await execa('/usr/bin/cvlc', ['--gain', '0.3', '--play-and-exit', path.join(__dirname, tone)]);
 
   if(!['PAUSED', 'STOPPED'].includes(status)) {
-    await fsExtra.appendFile('/home/stheine/.config/gmusicbrowser/gmusicbrowser.fifo', 'Play');
+    await fsExtra.appendFile(untildify('~/.config/gmusicbrowser/gmusicbrowser.fifo'), 'Play');
   }
 };
 
@@ -143,6 +143,7 @@ const sound = async function(tone) {
         case 'FritzBox/callMonitor/pickUp':
         case 'FritzBox/speedtest/result':
         case 'FritzBox/tele/SENSOR':
+        case 'Fronius/solar/tele/SENSOR':
         case 'Jalousie/cmnd/full_down':
         case 'Jalousie/cmnd/full_up':
         case 'Jalousie/cmnd/shadow':
@@ -220,6 +221,34 @@ const sound = async function(tone) {
         case 'vito/tele/LWT':
         case 'vito/tele/SENSOR':
         case 'volumio/stat/pushState':
+        case 'Wallbox/authentication/config':
+        case 'Wallbox/charge_manager/available_current':
+        case 'Wallbox/charge_manager/config':
+        case 'Wallbox/charge_manager/state':
+        case 'Wallbox/ethernet/config':
+        case 'Wallbox/ethernet/state':
+        case 'Wallbox/evse/auto_start_charging':
+        case 'Wallbox/evse/button_configuration':
+        case 'Wallbox/evse/energy_meter_state':
+        case 'Wallbox/evse/energy_meter_values':
+        case 'Wallbox/evse/gpio_configuration':
+        case 'Wallbox/evse/dc_fault_current_state':
+        case 'Wallbox/evse/hardware_configuration':
+        case 'Wallbox/evse/managed':
+        case 'Wallbox/evse/max_charging_current':
+        case 'Wallbox/evse/state':
+        case 'Wallbox/evse/low_level_state':
+        case 'Wallbox/meter/detailed_values':
+        case 'Wallbox/meter/state':
+        case 'Wallbox/modules':
+        case 'Wallbox/mqtt/config':
+        case 'Wallbox/mqtt/state':
+        case 'Wallbox/nfc/config':
+        case 'Wallbox/nfc/seen_tags':
+        case 'Wallbox/version':
+        case 'Wallbox/wifi/ap_config':
+        case 'Wallbox/wifi/sta_config':
+        case 'Wallbox/wifi/state':
         case 'Wind/tele/SENSOR':
         case 'Wohnzimmer/tele/SENSOR':
         case 'Zigbee/bridge/config':
@@ -227,6 +256,7 @@ const sound = async function(tone) {
         case 'Zigbee/bridge/config/devices/get':
         case 'Zigbee/bridge/config/permit_join':
         case 'Zigbee/bridge/devices':
+        case 'Zigbee/bridge/event':
         case 'Zigbee/bridge/extensions':
         case 'Zigbee/bridge/groups':
         case 'Zigbee/bridge/info':
@@ -265,7 +295,7 @@ const sound = async function(tone) {
 
             await Promise.all([
               popup('Haustür Klingel', '', 'doorbell.png'),
-              sound('./doorbell.mp3'),
+              sound('sounds/doorbell.mp3'),
             ]);
           }
           break;
@@ -296,7 +326,7 @@ const sound = async function(tone) {
 
           await Promise.all([
             popup(popupParam1, popupParam2, 'ringer.png'),
-            sound('./ringer.mp3'),
+            sound('sounds/ringer.mp3'),
           ]);
           break;
         }
@@ -304,7 +334,7 @@ const sound = async function(tone) {
         case 'Mqtt/cmnd/alert':
           await Promise.all([
             popup(JSON.stringify(message), message.tone, 'ringer.png'),
-            sound(`./${message.tone || 'alert'}.mp3`),
+            sound(`sounds/${message.tone || 'alert'}.mp3`),
           ]);
           break;
 
@@ -321,7 +351,7 @@ const sound = async function(tone) {
           logger.warn('test', message);
           await Promise.all([
             popup('test', message, 'alert.png'),
-            sound(`./${message || 'alert'}.mp3`),
+            sound(`sounds/${message || 'alert'}.mp3`),
           ]);
           break;
 
@@ -367,38 +397,18 @@ const sound = async function(tone) {
         const from = header.from.join(',');
         const subject = header.subject.join(',');
         const to = header.to.join(',');
-        const text = _.find(parts, {which: 'TEXT'}).body.trim();
+        const token = _.find(parts, {which: 'TEXT'}).body.trim();
 
-        logger.debug({from, to, subject, text});
+        logger.debug({from, to, subject, token});
 
-        const vpnProcess = childProcess.spawn('/usr/bin/sudo', [
-          '/usr/sbin/openconnect',
-          `--authgroup=${vpnConfig.authgroup}`,
-          `--protocol=${vpnConfig.protocol}`,
-          `--user=${vpnConfig.user}`,
-          vpnConfig.server,
-        ]);
+        const {ip} = await connect({token});
 
-        vpnProcess.stderr.on('data', data => {
-          const dataString = data.toString().trim();
-
-          logger.debug(dataString);
-
-          if(dataString.endsWith('Domain ID:')) {
-            logger.debug('  DOMAIN REQUEST, answer');
-            vpnProcess.stdin.write(`${vpnConfig.domain}\n`);
-          } else if(dataString.endsWith('Domain Password:')) {
-            logger.debug('  PASSWORD REQUEST, answer');
-            vpnProcess.stdin.write(`${vpnConfig.password}\n`);
-          } else if(dataString.endsWith('Please enter response:')) {
-            logger.debug('  TOKEN REQUEST, answer');
-            vpnProcess.stdin.write(`${text}\n`);
-          }
-        });
-        vpnProcess.stdout.on('data', data => {
-          const dataString = data.toString().trim();
-
-          logger.debug(dataString);
+        await sendMail({
+          to:      from,
+          subject: `VPN connected on ${ip}`,
+          html:    `
+            <p>VPN connected on ${ip}</p>
+          `,
         });
       }
     },

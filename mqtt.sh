@@ -14,6 +14,6 @@ fi
 
 
 while [ true ]; do
-  ~/js/mqtt/mqtt.js </dev/null | tee -a ~/.mqtt.log
+  $(dirname $0)/mqtt.js </dev/null | tee -a ~/.mqtt.log
   sleep 1
 done
