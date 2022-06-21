@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
-'use strict';
+import childProcess from 'child_process';
 
-const childProcess = require('child_process');
-
-const {connect}    = require('./vpn');
-const logger       = require('./logger');
+import {connect}    from './vpn.js';
+import logger       from './logger.js';
 
 // ###########################################################################
 // Main (async)

@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-'use strict';
-
-const mqtt = require('async-mqtt');
+import mqtt from 'async-mqtt';
 
 // ###########################################################################
 // Globals

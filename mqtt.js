@@ -1,32 +1,35 @@
 #!/usr/bin/env node
 
-'use strict';
+import {setTimeout as delay} from 'timers/promises';
+import {fileURLToPath}       from 'url';
+import path                  from 'path';
+import readline              from 'readline';
 
-const path         = require('path');
-const readline     = require('readline');
+import _            from 'lodash';
+import {execa}      from 'execa';
+import fsExtra      from 'fs-extra';
+import imaps        from '@klenty/imap';
+import mqtt         from 'async-mqtt';
+import ms           from 'ms';
+import npid         from 'npid';
+import untildify    from 'untildify';
+import windowSize   from 'window-size';
 
-const _            = require('lodash');
-const delay        = require('delay');
-const execa        = require('execa');
-const fsExtra      = require('fs-extra');
-const imaps        = require('imap-simple');
-const millisecond  = require('millisecond');
-const mqtt         = require('async-mqtt');
-const npid         = require('npid');
-const untildify    = require('untildify');
-const windowSize   = require('window-size');
+import {connect}    from './vpn.js';
+import logger       from './logger.js';
+import {sendMail}   from './mail.js';
 
-const {connect}    = require('./vpn');
-const logger       = require('./logger');
-const {sendMail}   = require('./mail');
-
-const imapConfig   = require('/mnt/qnap_linux/data/imap/config.js');
+import imapConfig   from '/mnt/qnap_linux/data/imap/config.js';
 
 // ###########################################################################
 // Globals
 
+/* eslint-disable no-underscore-dangle */
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 let imapClient;
 let mqttClient;
+// let previousWasserValue;
 
 // ###########################################################################
 // Process handling
@@ -70,7 +73,7 @@ const sound = async function(tone) {
 
   if(!['PAUSED', 'STOPPED'].includes(status)) {
     await fsExtra.appendFile(untildify('~/.config/gmusicbrowser/gmusicbrowser.fifo'), 'Pause');
-    await delay(millisecond('0.2 seconds'));
+    await delay(ms('0.2 seconds'));
   }
 
   // console.log({tone});
@@ -137,7 +140,15 @@ const sound = async function(tone) {
       }
 
       switch(topic) {
-        case 'esp32-wasser/zaehlerstand':
+        case 'esp32-wasser/zaehlerstand/connection':
+        case 'esp32-wasser/zaehlerstand/freeMem':
+        case 'esp32-wasser/zaehlerstand/json':
+        case 'esp32-wasser/zaehlerstand/rate':
+        case 'esp32-wasser/zaehlerstand/raw':
+        case 'esp32-wasser/zaehlerstand/timestamp':
+        case 'esp32-wasser/zaehlerstand/uptime':
+        case 'esp32-wasser/zaehlerstand/value':
+        case 'esp32-wasser/zaehlerstand/wifiRSSI':
         case 'FritzBox/callMonitor/call':
         case 'FritzBox/callMonitor/hangUp':
         case 'FritzBox/callMonitor/pickUp':
@@ -149,9 +160,26 @@ const sound = async function(tone) {
         case 'Jalousie/cmnd/shadow':
         case 'Jalousie/cmnd/stop':
         case 'Jalousie/tele/SENSOR':
+        case 'octoPrint/event/ClientClosed':
+        case 'octoPrint/event/ClientOpened':
         case 'Regen/tele/SENSOR':
+        case 'solcast/forecasts':
         case 'Sonne/tele/SENSOR':
         case 'strom/tele/SENSOR':
+        case 'tasmota/carport/cmnd/POWER':
+        case 'tasmota/carport/stat/RESULT':
+        case 'tasmota/carport/stat/POWER':
+        case 'tasmota/carport/tele/INFO1':
+        case 'tasmota/carport/tele/INFO2':
+        case 'tasmota/carport/tele/INFO3':
+        case 'tasmota/carport/tele/LWT':
+        case 'tasmota/carport/tele/SENSOR':
+        case 'tasmota/carport/tele/STATE':
+        case 'tasmota/druckerkamera/stat/POWER':
+        case 'tasmota/druckerkamera/stat/RESULT':
+        case 'tasmota/druckerkamera/tele/LWT':
+        case 'tasmota/druckerkamera/tele/SENSOR':
+        case 'tasmota/druckerkamera/tele/STATE':
         case 'tasmota/espco2/cmnd/POWER':
         case 'tasmota/espco2/tele/INFO1':
         case 'tasmota/espco2/tele/INFO2':
@@ -175,15 +203,6 @@ const sound = async function(tone) {
         case 'tasmota/espstrom/tele/LWT':
         case 'tasmota/espstrom/tele/SENSOR':
         case 'tasmota/espstrom/tele/STATE':
-        case 'tasmota/solar/cmnd/POWER':
-        case 'tasmota/solar/stat/POWER':
-        case 'tasmota/solar/stat/RESULT':
-        case 'tasmota/solar/tele/INFO1':
-        case 'tasmota/solar/tele/INFO2':
-        case 'tasmota/solar/tele/INFO3':
-        case 'tasmota/solar/tele/LWT':
-        case 'tasmota/solar/tele/SENSOR':
-        case 'tasmota/solar/tele/STATE':
         case 'tasmota/spuelmaschine/cmnd/LedMask':
         case 'tasmota/spuelmaschine/cmnd/LedPower1':
         case 'tasmota/spuelmaschine/cmnd/LedPower2':
@@ -218,6 +237,28 @@ const sound = async function(tone) {
         case 'tasmota/waschmaschine/tele/INFO3':
         case 'tasmota/waschmaschine/tele/LWT':
         case 'tasmota/waschmaschine/tele/STATE':
+        case 'valetudo/dreame-d9/$state':
+        case 'valetudo/dreame-d9/MapData/segments':
+        case 'valetudo/dreame-d9/FanSpeedControlCapability/preset':
+        case 'valetudo/dreame-d9/CurrentStatisticsCapability/time':
+        case 'valetudo/dreame-d9/CurrentStatisticsCapability/area':
+        case 'valetudo/dreame-d9/ConsumableMonitoringCapability/brush-main':
+        case 'valetudo/dreame-d9/ConsumableMonitoringCapability/brush-side_right':
+        case 'valetudo/dreame-d9/ConsumableMonitoringCapability/filter-main':
+        case 'valetudo/dreame-d9/AttachmentStateAttribute/dustbin':
+        case 'valetudo/dreame-d9/AttachmentStateAttribute/watertank':
+        case 'valetudo/dreame-d9/AttachmentStateAttribute/mop':
+        case 'valetudo/dreame-d9/BatteryStateAttribute/level':
+        case 'valetudo/dreame-d9/BatteryStateAttribute/status':
+        case 'valetudo/dreame-d9/StatusStateAttribute/detail':
+        case 'valetudo/dreame-d9/StatusStateAttribute/error':
+        case 'valetudo/dreame-d9/StatusStateAttribute/status':
+        case 'valetudo/dreame-d9/WaterUsageControlCapability/preset':
+        case 'valetudo/dreame-d9/WifiConfigurationCapability/frequency':
+        case 'valetudo/dreame-d9/WifiConfigurationCapability/ips':
+        case 'valetudo/dreame-d9/WifiConfigurationCapability/signal':
+        case 'valetudo/dreame-d9/WifiConfigurationCapability/ssid':
+        case 'valetudo/dreame-d9/ZoneCleaningCapability/presets':
         case 'vito/tele/LWT':
         case 'vito/tele/SENSOR':
         case 'volumio/stat/pushState':
@@ -229,6 +270,7 @@ const sound = async function(tone) {
         case 'Wallbox/ethernet/state':
         case 'Wallbox/evse/auto_start_charging':
         case 'Wallbox/evse/button_configuration':
+        case 'Wallbox/evse/button_state':
         case 'Wallbox/evse/energy_meter_state':
         case 'Wallbox/evse/energy_meter_values':
         case 'Wallbox/evse/gpio_configuration':
@@ -270,18 +312,45 @@ const sound = async function(tone) {
         case 'Zigbee/bridge/response/networkmap':
         case 'Zigbee/bridge/state':
         case 'Zigbee/FensterSensor Büro':
+        case 'Zigbee/FensterSensor Büro/availability':
         case 'Zigbee/FensterSensor Garage':
+        case 'Zigbee/FensterSensor Garage/availability':
         case 'Zigbee/FensterSensor Toilette':
+        case 'Zigbee/FensterSensor Toilette/availability':
         case 'Zigbee/FensterSensor 1':
+        case 'Zigbee/FensterSensor 1/availability':
+        case 'Zigbee/Haustür Klingel/availability':
         case 'Zigbee/LuftSensor Büro':
+        case 'Zigbee/LuftSensor Büro/availability':
         case 'Zigbee/Repeater Büro':
+        case 'Zigbee/Repeater Büro/availability':
         case 'Zigbee/Repeater EG':
+        case 'Zigbee/Repeater EG/availability':
           // ignore
           break;
 
-        case 'esp32-wasser/error':
-          if(message) {
-            logger.info('esp32-wasser/error', message);
+        case 'valetudo/dreame-d9/MapData/map-data': // TODO
+          // logger.info('valetudo/map-data', message);
+          break;
+
+//        case 'esp32-wasser/zaehlerstand/value': {
+//          if(previousWasserValue !== message) {
+//            if(previousWasserValue) {
+//              logger.info('esp32-wasser', {value: message, diff: _.round(message - previousWasserValue, 4)});
+//            } else {
+//              logger.info('esp32-wasser', {value: message});
+//            }
+//
+//            previousWasserValue = message;
+//          } else {
+//            logger.info('esp32-wasser', {value: message});
+//          }
+//          break;
+//        }
+
+        case 'esp32-wasser/zaehlerstand/error':
+          if(message && message !== 'no error') {
+            logger.info('esp32-wasser Fehler', message);
           }
           break;
 

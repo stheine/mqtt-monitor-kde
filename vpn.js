@@ -1,16 +1,13 @@
-'use strict';
+import childProcess from 'child_process';
 
-const childProcess = require('child_process');
+import logger       from './logger.js';
 
-const logger       = require('./logger');
-
-const connect = async function({token}) {
+export const connect = async function({token}) {
   let vpnConfig;
 
   try {
-    // eslint-disable-next-line global-require
-    vpnConfig = require('/mnt/qnap_linux/data/vpn/config.js');
-  } catch {
+    vpnConfig = (await import('/mnt/qnap_linux/data/vpn/config.js')).default;
+  } catch{
     throw new Error('Failed to load /mnt/qnap_linux/data/vpn/config.js');
   }
 
@@ -62,5 +59,3 @@ const connect = async function({token}) {
     vpnProcess.stdout.on('data', handleData);
   });
 };
-
-module.exports = {connect};
