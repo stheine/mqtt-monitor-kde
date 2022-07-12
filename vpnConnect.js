@@ -4,6 +4,7 @@ import childProcess from 'child_process';
 
 import {connect}    from './vpn.js';
 import logger       from './logger.js';
+import vpnConfig    from '/mnt/qnap_linux/data/vpn/config.js';
 
 // ###########################################################################
 // Main (async)
@@ -11,7 +12,7 @@ import logger       from './logger.js';
 (async() => {
   const dialogProcess = childProcess.spawn('/usr/bin/kdialog', [
     '--title', 'VPN',
-    '--inputbox', 'Enter token',
+    '--inputbox', `Enter ${vpnConfig.authgroup}`,
   ]);
 
   const token = await new Promise(resolve => {
