@@ -1,3 +1,4 @@
+import _            from 'lodash';
 import childProcess from 'child_process';
 
 import logger       from './logger.js';
@@ -19,39 +20,56 @@ export const connect = async function({token}) {
     `--authgroup=${vpnConfig.authgroup}`,
     `--protocol=${vpnConfig.protocol}`,
     `--user=${vpnConfig.user}`,
+    '--quiet',
     vpnConfig.server,
   ]);
 
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    vpnProcess.on('close', code => logger.info(`Process close ${code}`));
+    vpnProcess.on('disconnect', code => logger.info(`Process disconnect ${code}`));
+    vpnProcess.on('error', code => logger.info(`Process error ${code}`));
+    vpnProcess.on('exit', code => logger.info(`Process exit ${code}`));
+    vpnProcess.on('message', code => logger.info(`Process message ${code}`));
+    vpnProcess.on('spawn', code => logger.info(`Process spawn ${code}`));
+
     const handleData = async function(data) {
       const dataString = data.toString().trim();
+      const dataArray = _.map(dataString.split(/\n/), dataLine => dataLine.trim());
 
-      logger.debug(dataString);
-
-      if(dataString.endsWith('Domain ID:')) {
-        logger.debug('  DOMAIN REQUEST, answer');
-        vpnProcess.stdin.write(`${vpnConfig.domain}\n`);
-      } else if(dataString.endsWith('Domain Password:')) {
-        logger.debug('  PASSWORD REQUEST, answer');
-        vpnProcess.stdin.write(`${vpnConfig.password}\n`);
-      } else if(dataString.endsWith('Please enter response:')) {
-        if(triedToken) {
-          vpnProcess.kill();
-
-          return reject(new Error('Invalid token'));
+      for(const dataLine of dataArray) {
+        if(!dataLine.startsWith('>')) {
+          logger.debug(dataLine);
         }
 
-        logger.debug('  TOKEN REQUEST, answer');
-        vpnProcess.stdin.write(`${token}\n`);
+//        if(dataLine === 'Domain ID:') {
+//          logger.debug('# -> DOMAIN REQUEST, answer');
+//          vpnProcess.stdin.write(`${vpnConfig.domain}\n`);
+//        } else
+        if(dataLine === 'Micro Focus Domain Password:') {
+          logger.debug('# -> PASSWORD REQUEST, answer');
+          vpnProcess.stdin.write(`${vpnConfig.password}\n`);
+        } else if(dataLine === 'Please enter response:') {
+          if(triedToken) {
+  //          logger.debug('wrong token, stop trying');
 
-        triedToken = true;
-      } else if(dataString.endsWith('using SSL, with ESP in progress')) {
-        const ip = dataString.replace(/^.*Connected as /, '').replace(/, using SSL.*$/, '');
+            vpnProcess.kill();
 
-        vpnProcess.stderr.removeListener('data', handleData);
-        vpnProcess.stdout.removeListener('data', handleData);
+            return reject(new Error('Invalid token'));
+          }
 
-        return resolve({ip, vpnProcess});
+          logger.debug('# -> TOKEN REQUEST, answer');
+          vpnProcess.stdin.write(`${token}\n`);
+
+          triedToken = true;
+//        } else if(dataLine.endsWith('using SSL, with ESP in progress')) {
+        } else if(dataLine.startsWith('Received internal Legacy IP address')) {
+          const ip = dataLine.replace(/^Received internal Legacy IP address /, '');
+
+          vpnProcess.stderr.removeListener('data', handleData);
+          vpnProcess.stdout.removeListener('data', handleData);
+
+          return resolve({ip, vpnProcess});
+        }
       }
     };
 
