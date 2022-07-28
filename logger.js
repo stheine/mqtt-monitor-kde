@@ -5,30 +5,30 @@ import dayjs from 'dayjs';
 export default {
   debug(msg, params) {
     if(params) {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} DEBUG`, msg, params);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} DEBUG`, msg, params);
     } else {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} DEBUG`, msg);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} DEBUG`, msg);
     }
   },
   info(msg, params) {
     if(params) {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} INFO`, msg, params);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} INFO`, msg, params);
     } else {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} INFO`, msg);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} INFO`, msg);
     }
   },
   warn(msg, params) {
     if(params) {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} WARN`, msg, params);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} WARN`, msg, params);
     } else {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} WARN`, msg);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} WARN`, msg);
     }
   },
   error(msg, params) {
     if(params) {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} ERROR`, msg, params);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} ERROR`, msg, params);
     } else {
-      console.log(`${dayjs().format('YYYY-MM-DD HH:mm:ss')} ERROR`, msg);
+      console.log(`\r${dayjs().format('YYYY-MM-DD HH:mm:ss')} ERROR`, msg);
     }
   },
 };
