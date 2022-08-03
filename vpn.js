@@ -3,7 +3,7 @@ import childProcess from 'child_process';
 
 import logger       from './logger.js';
 
-export const connect = async function({token}) {
+export const connect = async function() {
   let vpnConfig;
 
   try {
@@ -57,11 +57,36 @@ export const connect = async function({token}) {
             return reject(new Error('Invalid token'));
           }
 
+          const dialogProcess = childProcess.spawn('/usr/bin/kdialog', [
+            '--title', 'VPN',
+            '--inputbox', `Enter ${vpnConfig.authgroup}`,
+          ]);
+
+          const token = await new Promise(resolveToken => {
+            const handleTokenData = function(tokenData) {
+              const dataTokenStrin = tokenData.toString().trim();
+
+              dialogProcess.stdout.removeListener('data', handleTokenData);
+
+              return resolveToken(dataTokenStrin);
+            };
+
+            dialogProcess.stdout.on('data', handleTokenData);
+          });
+
+          if(!token) {
+            logger.error('Token missing');
+
+            process.exit(1);
+          }
+
           logger.debug('# -> TOKEN REQUEST, answer');
           vpnProcess.stdin.write(`${token}\n`);
 
           triedToken = true;
 //        } else if(dataLine.endsWith('using SSL, with ESP in progress')) {
+        } else if(dataLine.includes(`Enter 'yes' to accept`)) {
+          vpnProcess.stdin.write('yes\n');
         } else if(dataLine.startsWith('Received internal Legacy IP address')) {
           const ip = dataLine.replace(/^Received internal Legacy IP address /, '');
 
