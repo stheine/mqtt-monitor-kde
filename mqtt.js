@@ -67,7 +67,7 @@ const popup = async function(title, detail, icon) {
 };
 
 const sound = async function(tone) {
-  const status = (await fsExtra.readFile(untildify('~/.playing'), {encoding: 'utf8'})).trim();
+  const status = (await fsExtra.readFile(untildify('~/.config/gmusicbrowser/playing'), {encoding: 'utf8'})).trim();
 
   // console.log({status});
 
