@@ -140,6 +140,7 @@ const sound = async function(tone) {
       }
 
       switch(topic) {
+        case 'esp32-wasser/zaehlerstand/changeabsolut':
         case 'esp32-wasser/zaehlerstand/connection':
         case 'esp32-wasser/zaehlerstand/freeMem':
         case 'esp32-wasser/zaehlerstand/json':
@@ -266,27 +267,56 @@ const sound = async function(tone) {
         case 'Wallbox/charge_manager/available_current':
         case 'Wallbox/charge_manager/config':
         case 'Wallbox/charge_manager/state':
+        case 'Wallbox/charge_tracker/current_charge':
+        case 'Wallbox/charge_tracker/last_charges':
+        case 'Wallbox/charge_tracker/state':
         case 'Wallbox/ethernet/config':
         case 'Wallbox/ethernet/state':
         case 'Wallbox/evse/auto_start_charging':
         case 'Wallbox/evse/button_configuration':
         case 'Wallbox/evse/button_state':
+        case 'Wallbox/evse/control_pilot_configuration':
         case 'Wallbox/evse/energy_meter_state':
         case 'Wallbox/evse/energy_meter_values':
         case 'Wallbox/evse/gpio_configuration':
         case 'Wallbox/evse/dc_fault_current_state':
+        case 'Wallbox/evse/external_clear_on_disconnect':
+        case 'Wallbox/evse/external_current':
+        case 'Wallbox/evse/external_defaults':
+        case 'Wallbox/evse/external_enabled':
+        case 'Wallbox/evse/global_current':
         case 'Wallbox/evse/hardware_configuration':
-        case 'Wallbox/evse/managed':
-        case 'Wallbox/evse/max_charging_current':
-        case 'Wallbox/evse/state':
+        case 'Wallbox/evse/indicator_led':
         case 'Wallbox/evse/low_level_state':
+        case 'Wallbox/evse/managed':
+        case 'Wallbox/evse/management_current':
+        case 'Wallbox/evse/management_enabled':
+        case 'Wallbox/evse/max_charging_current':
+        case 'Wallbox/evse/slots':
+        case 'Wallbox/evse/state':
+        case 'Wallbox/evse/user_current':
+        case 'Wallbox/evse/user_enabled':
+        case 'Wallbox/info/display_name':
+        case 'Wallbox/info/features':
+        case 'Wallbox/info/modules':
+        case 'Wallbox/info/name':
+        case 'Wallbox/info/version':
+        case 'Wallbox/meter/all_values':
         case 'Wallbox/meter/detailed_values':
+        case 'Wallbox/meter/error_counters':
+        case 'Wallbox/meter/last_reset':
+        case 'Wallbox/meter/phases':
         case 'Wallbox/meter/state':
+        case 'Wallbox/meter/values':
         case 'Wallbox/modules':
         case 'Wallbox/mqtt/config':
         case 'Wallbox/mqtt/state':
+        case 'Wallbox/network/config':
         case 'Wallbox/nfc/config':
         case 'Wallbox/nfc/seen_tags':
+        case 'Wallbox/ntp/config':
+        case 'Wallbox/ntp/state':
+        case 'Wallbox/users/config':
         case 'Wallbox/version':
         case 'Wallbox/wifi/ap_config':
         case 'Wallbox/wifi/sta_config':
