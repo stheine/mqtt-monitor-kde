@@ -8,8 +8,8 @@ export const connect = async function() {
 
   try {
     vpnConfig = (await import('/mnt/qnap_linux/data/vpn/config.js')).default;
-  } catch{
-    throw new Error('Failed to load /mnt/qnap_linux/data/vpn/config.js');
+  } catch(err) {
+    throw new Error(`Failed to load /mnt/qnap_linux/data/vpn/config.js: ${err.message}`);
   }
 
   let triedToken = false;
