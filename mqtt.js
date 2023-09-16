@@ -140,12 +140,29 @@ const sound = async function(tone) {
       }
 
       switch(topic) {
+        case 'control-io/brightness/STATE':
+        case 'control-io/buttonUpper/STATE':
+        case 'control-io/buttonLower/STATE':
+        case 'control-io/cmnd/beep':
+        case 'control-io/cmnd/brightness':
+        case 'control-io/cmnd/display':
+        case 'control-io/cmnd/ledRed':
+        case 'control-io/cmnd/ledWhite':
+        case 'control-io/display/STATE':
+        case 'control-io/ledRed/STATE':
+        case 'control-io/ledWhite/STATE':
+        case 'control-ui/cmnd/dialog':
+        case 'control-ui/cmnd/route':
         case 'esp32-wasser/zaehlerstand/changeabsolut':
         case 'esp32-wasser/zaehlerstand/connection':
+        case 'esp32-wasser/zaehlerstand/CPUtemp':
         case 'esp32-wasser/zaehlerstand/freeMem':
         case 'esp32-wasser/zaehlerstand/json':
         case 'esp32-wasser/zaehlerstand/rate':
+        case 'esp32-wasser/zaehlerstand/rate_per_digitalization_round':
+        case 'esp32-wasser/zaehlerstand/rate_per_time_unit':
         case 'esp32-wasser/zaehlerstand/raw':
+        case 'esp32-wasser/zaehlerstand/status':
         case 'esp32-wasser/zaehlerstand/timestamp':
         case 'esp32-wasser/zaehlerstand/uptime':
         case 'esp32-wasser/zaehlerstand/value':
@@ -155,18 +172,40 @@ const sound = async function(tone) {
         case 'FritzBox/callMonitor/pickUp':
         case 'FritzBox/speedtest/result':
         case 'FritzBox/tele/SENSOR':
+        case 'Fronius/solar/cmnd':
         case 'Fronius/solar/tele/SENSOR':
+        case 'Fronius/solar/tele/STATUS':
         case 'Jalousie/cmnd/full_down':
         case 'Jalousie/cmnd/full_up':
         case 'Jalousie/cmnd/shadow':
         case 'Jalousie/cmnd/stop':
-        case 'Jalousie/tele/SENSOR':
+        case 'Jalousie/cmnd/turn':
+        case 'JalousieBackend/cmnd':
+        case 'JalousieBackend/tele/SENSOR':
+        case 'JalousieBackend/tele/STATUS':
+        case 'JalousieBackend/tele/TIMES':
+        case 'maxSun/INFO':
         case 'octoPrint/event/ClientClosed':
         case 'octoPrint/event/ClientOpened':
+        case 'octoPrint/event/Connected':
+        case 'octoPrint/event/Connecting':
+        case 'octoPrint/event/Disconnected':
+        case 'octoPrint/event/Disconnecting':
+        case 'octoPrint/event/Error':
+        case 'octoPrint/event/PrintCancelled':
+        case 'octoPrint/event/PrintDone':
+        case 'octoPrint/event/PrintFailed':
+        case 'octoPrint/event/PrintPaused':
+        case 'octoPrint/event/PrintResumed':
+        case 'octoPrint/event/PrinterStateChanged':
+        case 'octoPrint/event/PrintStarted':
+        case 'octoPrint/event/Shutdown':
+        case 'octoPrint/mqtt':
         case 'Regen/tele/SENSOR':
         case 'solcast/forecasts':
         case 'Sonne/tele/SENSOR':
         case 'strom/tele/SENSOR':
+        case 'sunTimes/INFO':
         case 'tasmota/carport/cmnd/POWER':
         case 'tasmota/carport/stat/RESULT':
         case 'tasmota/carport/stat/POWER':
@@ -176,8 +215,12 @@ const sound = async function(tone) {
         case 'tasmota/carport/tele/LWT':
         case 'tasmota/carport/tele/SENSOR':
         case 'tasmota/carport/tele/STATE':
+        case 'tasmota/druckerkamera/cmnd/POWER':
         case 'tasmota/druckerkamera/stat/POWER':
         case 'tasmota/druckerkamera/stat/RESULT':
+        case 'tasmota/druckerkamera/tele/INFO1':
+        case 'tasmota/druckerkamera/tele/INFO2':
+        case 'tasmota/druckerkamera/tele/INFO3':
         case 'tasmota/druckerkamera/tele/LWT':
         case 'tasmota/druckerkamera/tele/SENSOR':
         case 'tasmota/druckerkamera/tele/STATE':
@@ -204,6 +247,46 @@ const sound = async function(tone) {
         case 'tasmota/espstrom/tele/LWT':
         case 'tasmota/espstrom/tele/SENSOR':
         case 'tasmota/espstrom/tele/STATE':
+        case 'tasmota/fahrradlader/cmnd/POWER':
+        case 'tasmota/fahrradlader/stat/INFO1':
+        case 'tasmota/fahrradlader/stat/INFO2':
+        case 'tasmota/fahrradlader/stat/INFO3':
+        case 'tasmota/fahrradlader/stat/POWER':
+        case 'tasmota/fahrradlader/stat/RESULT':
+        case 'tasmota/fahrradlader/tele/SENSOR':
+        case 'tasmota/fahrradlader/tele/STATE':
+        case 'tasmota/fahrradlader/tele/LWT':
+        case 'tasmota/haustürklingel/cmnd/POWER':
+        case 'tasmota/haustürklingel/stat/INFO1':
+        case 'tasmota/haustürklingel/stat/INFO2':
+        case 'tasmota/haustürklingel/stat/INFO3':
+        case 'tasmota/haustürklingel/stat/POWER':
+        case 'tasmota/haustürklingel/tele/SENSOR':
+        case 'tasmota/haustürklingel/tele/STATE':
+        case 'tasmota/haustürklingel/tele/LWT':
+        case 'tasmota/infrarotheizung/cmnd/Power':
+        case 'tasmota/infrarotheizung/cmnd/POWER':
+        case 'tasmota/infrarotheizung/cmnd/PulseTime':
+        case 'tasmota/infrarotheizung/stat/POWER':
+        case 'tasmota/infrarotheizung/stat/RESULT':
+        case 'tasmota/infrarotheizung/tele/INFO1':
+        case 'tasmota/infrarotheizung/tele/INFO2':
+        case 'tasmota/infrarotheizung/tele/INFO3':
+        case 'tasmota/infrarotheizung/tele/LWT':
+        case 'tasmota/infrarotheizung/tele/SENSOR':
+        case 'tasmota/infrarotheizung/tele/STATE':
+        case 'tasmota/jalousieBuero/cmnd/POWER':
+        case 'tasmota/jalousieBuero/cmnd/Power1':
+        case 'tasmota/jalousieBuero/cmnd/Power2':
+        case 'tasmota/jalousieBuero/stat/POWER1':
+        case 'tasmota/jalousieBuero/stat/POWER2':
+        case 'tasmota/jalousieBuero/stat/RESULT':
+        case 'tasmota/jalousieBuero/tele/LWT':
+        case 'tasmota/jalousieBuero/tele/INFO1':
+        case 'tasmota/jalousieBuero/tele/INFO2':
+        case 'tasmota/jalousieBuero/tele/INFO3':
+        case 'tasmota/jalousieBuero/tele/SENSOR':
+        case 'tasmota/jalousieBuero/tele/STATE':
         case 'tasmota/spuelmaschine/cmnd/LedMask':
         case 'tasmota/spuelmaschine/cmnd/LedPower1':
         case 'tasmota/spuelmaschine/cmnd/LedPower2':
@@ -249,10 +332,14 @@ const sound = async function(tone) {
         case 'valetudo/dreame-d9/AttachmentStateAttribute/dustbin':
         case 'valetudo/dreame-d9/AttachmentStateAttribute/watertank':
         case 'valetudo/dreame-d9/AttachmentStateAttribute/mop':
+        case 'valetudo/dreame-d9/BasicControlCapability/operation':
+        case 'valetudo/dreame-d9/BasicControlCapability/operation/set':
         case 'valetudo/dreame-d9/BatteryStateAttribute/level':
         case 'valetudo/dreame-d9/BatteryStateAttribute/status':
         case 'valetudo/dreame-d9/StatusStateAttribute/detail':
         case 'valetudo/dreame-d9/StatusStateAttribute/error':
+        case 'valetudo/dreame-d9/StatusStateAttribute/error_description':
+        case 'valetudo/dreame-d9/StatusStateAttribute/flag':
         case 'valetudo/dreame-d9/StatusStateAttribute/status':
         case 'valetudo/dreame-d9/WaterUsageControlCapability/preset':
         case 'valetudo/dreame-d9/WifiConfigurationCapability/frequency':
@@ -260,22 +347,35 @@ const sound = async function(tone) {
         case 'valetudo/dreame-d9/WifiConfigurationCapability/signal':
         case 'valetudo/dreame-d9/WifiConfigurationCapability/ssid':
         case 'valetudo/dreame-d9/ZoneCleaningCapability/presets':
+        case 'vito/cmnd/setHK1BetriebsartSpar':
         case 'vito/tele/LWT':
         case 'vito/tele/SENSOR':
+        case 'vito/tele/STATS':
         case 'volumio/stat/pushState':
+        case 'volumio/cmnd/DLF':
+        case 'volumio/cmnd/stop':
+        case 'volumio/cmnd/pause':
+        case 'volumio/cmnd/play':
+        case 'volumio/cmnd/playPause':
+        case 'volumio/cmnd/volume':
         case 'Wallbox/authentication/config':
         case 'Wallbox/charge_manager/available_current':
         case 'Wallbox/charge_manager/config':
+        case 'Wallbox/charge_manager/config_modified':
         case 'Wallbox/charge_manager/state':
+        case 'Wallbox/charge_tracker/config':
+        case 'Wallbox/charge_tracker/config_modified':
         case 'Wallbox/charge_tracker/current_charge':
         case 'Wallbox/charge_tracker/last_charges':
         case 'Wallbox/charge_tracker/state':
         case 'Wallbox/ethernet/config':
+        case 'Wallbox/ethernet/config_modified':
         case 'Wallbox/ethernet/state':
         case 'Wallbox/evse/auto_start_charging':
         case 'Wallbox/evse/button_configuration':
         case 'Wallbox/evse/button_state':
         case 'Wallbox/evse/control_pilot_configuration':
+        case 'Wallbox/evse/control_pilot_connected':
         case 'Wallbox/evse/energy_meter_state':
         case 'Wallbox/evse/energy_meter_values':
         case 'Wallbox/evse/gpio_configuration':
@@ -292,12 +392,16 @@ const sound = async function(tone) {
         case 'Wallbox/evse/management_current':
         case 'Wallbox/evse/management_enabled':
         case 'Wallbox/evse/max_charging_current':
+        case 'Wallbox/evse/modbus_tcp_enabled':
+        case 'Wallbox/evse/ocpp_enabled':
         case 'Wallbox/evse/slots':
         case 'Wallbox/evse/state':
         case 'Wallbox/evse/user_current':
         case 'Wallbox/evse/user_enabled':
         case 'Wallbox/info/display_name':
+        case 'Wallbox/info/display_name_modified':
         case 'Wallbox/info/features':
+        case 'Wallbox/info/last_boots':
         case 'Wallbox/info/modules':
         case 'Wallbox/info/name':
         case 'Wallbox/info/version':
@@ -308,25 +412,34 @@ const sound = async function(tone) {
         case 'Wallbox/meter/phases':
         case 'Wallbox/meter/state':
         case 'Wallbox/meter/values':
+        case 'Wallbox/modbus_tcp/config':
+        case 'Wallbox/modbus_tcp/config_modified':
         case 'Wallbox/modules':
         case 'Wallbox/mqtt/config':
+        case 'Wallbox/mqtt/config_modified':
         case 'Wallbox/mqtt/state':
         case 'Wallbox/network/config':
+        case 'Wallbox/network/config_modified':
         case 'Wallbox/nfc/config':
+        case 'Wallbox/nfc/config_modified':
         case 'Wallbox/nfc/seen_tags':
         case 'Wallbox/ntp/config':
+        case 'Wallbox/ntp/config_modified':
         case 'Wallbox/ntp/state':
         case 'Wallbox/users/config':
         case 'Wallbox/version':
         case 'Wallbox/wifi/ap_config':
+        case 'Wallbox/wifi/ap_config_modified':
         case 'Wallbox/wifi/sta_config':
+        case 'Wallbox/wifi/sta_config_modified':
         case 'Wallbox/wifi/state':
+        case 'Wallbox/wireguard/config_modified':
+        case 'Wallbox/wireguard/config':
+        case 'Wallbox/wireguard/state':
+        case 'wetter/dwd/INFO':
+        case 'wetter/openweather/INFO':
         case 'Wind/tele/SENSOR':
         case 'Wohnzimmer/tele/SENSOR':
-        case 'Zigbee/bridge/config':
-        case 'Zigbee/bridge/config/devices':
-        case 'Zigbee/bridge/config/devices/get':
-        case 'Zigbee/bridge/config/permit_join':
         case 'Zigbee/bridge/devices':
         case 'Zigbee/bridge/event':
         case 'Zigbee/bridge/extensions':
@@ -334,28 +447,38 @@ const sound = async function(tone) {
         case 'Zigbee/bridge/info':
         case 'Zigbee/bridge/log':
         case 'Zigbee/bridge/logging':
-        case 'Zigbee/bridge/networkmap':
-        case 'Zigbee/bridge/networkmap/graphviz':
-        case 'Zigbee/bridge/networkmap/raw':
         case 'Zigbee/bridge/ota_update/check':
+        case 'Zigbee/bridge/request/networkmap':
+        case 'Zigbee/bridge/request/permit_join':
         case 'Zigbee/bridge/response/device/ota_update/check':
         case 'Zigbee/bridge/response/networkmap':
+        case 'Zigbee/bridge/response/permit_join':
         case 'Zigbee/bridge/state':
+        case 'Zigbee/Coordinator/availability':
+        case 'Zigbee/FensterSensor Badezimmer':
+        case 'Zigbee/FensterSensor Badezimmer/availability':
         case 'Zigbee/FensterSensor Büro':
         case 'Zigbee/FensterSensor Büro/availability':
         case 'Zigbee/FensterSensor Garage':
         case 'Zigbee/FensterSensor Garage/availability':
+        case 'Zigbee/FensterSensor Kinderbad':
+        case 'Zigbee/FensterSensor Kinderbad/availability':
         case 'Zigbee/FensterSensor Toilette':
         case 'Zigbee/FensterSensor Toilette/availability':
-        case 'Zigbee/FensterSensor 1':
-        case 'Zigbee/FensterSensor 1/availability':
-        case 'Zigbee/Haustür Klingel/availability':
+        case 'Zigbee/FensterSensor Sonoff 1':
+        case 'Zigbee/FensterSensor Sonoff 1/availability':
+        case 'Zigbee/LuftSensor Außen':
+        case 'Zigbee/LuftSensor Außen/availability':
         case 'Zigbee/LuftSensor Büro':
         case 'Zigbee/LuftSensor Büro/availability':
+        case 'Zigbee/LuftSensor Wohnzimmer':
+        case 'Zigbee/LuftSensor Wohnzimmer/availability':
         case 'Zigbee/Repeater Büro':
         case 'Zigbee/Repeater Büro/availability':
         case 'Zigbee/Repeater EG':
         case 'Zigbee/Repeater EG/availability':
+        case 'Zigbee/Repeater OG':
+        case 'Zigbee/Repeater OG/availability':
           // ignore
           break;
 
@@ -384,12 +507,12 @@ const sound = async function(tone) {
           }
           break;
 
-        case 'Zigbee/Haustür Klingel': {
-//          logger.info('Zigbee/Haustür Klingel', message);
+        case 'tasmota/haustürklingel/stat/RESULT': {
+//          logger.info('tasmota/Haustür Klingel', message);
 
-          const contact = message.contact;
+          const contact = message.POWER;
 
-          if(!contact) {
+          if(contact === 'ON') {
             logger.info('Haustür klingelt');
 
             await Promise.all([
@@ -469,51 +592,61 @@ const sound = async function(tone) {
   // Connect to mail server to handle incoming mail
   const {host, password, port, user} = imapConfig;
 
-  imapClient = await imaps.connect({
-    imap: {
-  //        debug:       console.log,
-      user,
-      password,
-      host,
-      port,
-      tls:         true,
-      authTimeout: 25000,
-      connTimeout: 1000,
-    },
-    async onmail() {
-      const mails = await imapClient.search(['UNSEEN'], {bodies: ['HEADER', 'TEXT'], markSeen: true});
+  try {
+    imapClient = await imaps.connect({
+      imap: {
+    //        debug:       console.log,
+        user,
+        password,
+        host,
+        port,
+        tls:         true,
+        authTimeout: 25000,
+        connTimeout: 1000,
+      },
+      async onmail() {
+        const mails = await imapClient.search(['UNSEEN'], {bodies: ['HEADER', 'TEXT'], markSeen: true});
 
-      if(!mails.length) {
-        return;
-      }
+        if(!mails.length) {
+          return;
+        }
 
-      logger.debug('OnMail event');
+        logger.debug('OnMail event');
 
       // logger.debug({mails});
-      for(const mail of mails) {
-        const {parts} = mail;
-        const header = _.find(parts, {which: 'HEADER'}).body;
-        const from = header.from.join(',');
-        const subject = header.subject.join(',');
-        const to = header.to.join(',');
-        const token = _.find(parts, {which: 'TEXT'}).body.trim();
+        for(const mail of mails) {
+          const {parts} = mail;
+          const header = _.find(parts, {which: 'HEADER'}).body;
+          const from = header.from.join(',');
+          const subject = header.subject.join(',');
+          const to = header.to.join(',');
+          const token = _.find(parts, {which: 'TEXT'}).body.trim();
 
-        logger.debug({from, to, subject, token});
+          logger.debug({from, to, subject, token});
 
-        const {ip} = await connect({token});
+          const {ip} = await connect({token});
 
-        await sendMail({
-          to:      from,
-          subject: `VPN connected on ${ip}`,
-          html:    `
-            <p>VPN connected on ${ip}</p>
-          `,
-        });
-      }
-    },
-  });
+          await sendMail({
+            to:      from,
+            subject: `VPN connected on ${ip}`,
+            html:    `
+              <p>VPN connected on ${ip}</p>
+            `,
+          });
+        }
+      },
+    });
 
-  await imapClient.openBox('INBOX');
+    await imapClient.openBox('INBOX');
+  } catch(err) {
+    logger.error('Failed to connect IMAP:', err.message);
+
+    setTimeout(() => {
+      logger.info('Stop to trigger IMAP reconnect');
+
+      stopProcess();
+    }, ms('1 hour'));
+  }
 
   // #########################################################################
   // Blank screen on Enter
