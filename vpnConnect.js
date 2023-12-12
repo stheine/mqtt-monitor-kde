@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable unicorn/no-hex-escape */
+
 // import childProcess from 'child_process';
 
 import {connect}    from './vpn.js';
@@ -32,6 +34,9 @@ import logger       from './logger.js';
 //
 //    process.exit(1);
 //  }
+
+  process.stdout.write(`\x1B]2;MF VPN\x07`);
+
 
   let ip;
   let vpnProcess;
