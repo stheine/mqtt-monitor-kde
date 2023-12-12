@@ -256,6 +256,12 @@ const sound = async function(tone) {
         case 'tasmota/fahrradlader/tele/SENSOR':
         case 'tasmota/fahrradlader/tele/STATE':
         case 'tasmota/fahrradlader/tele/LWT':
+        case 'tasmota/fenstermotor-heizungskeller/cmnd/Power1':
+        case 'tasmota/fenstermotor-heizungskeller/cmnd/Power2':
+        case 'tasmota/fenstermotor-heizungskeller/stat/POWER1':
+        case 'tasmota/fenstermotor-heizungskeller/stat/POWER2':
+        case 'tasmota/fenstermotor-heizungskeller/tele/LWT':
+        case 'tasmota/fenstermotor-heizungskeller/tele/STATE':
         case 'tasmota/haustürklingel/cmnd/POWER':
         case 'tasmota/haustürklingel/stat/INFO1':
         case 'tasmota/haustürklingel/stat/INFO2':
@@ -264,20 +270,41 @@ const sound = async function(tone) {
         case 'tasmota/haustürklingel/tele/SENSOR':
         case 'tasmota/haustürklingel/tele/STATE':
         case 'tasmota/haustürklingel/tele/LWT':
-        case 'tasmota/infrarotheizung/cmnd/Power':
-        case 'tasmota/infrarotheizung/cmnd/POWER':
-        case 'tasmota/infrarotheizung/cmnd/PulseTime':
-        case 'tasmota/infrarotheizung/stat/POWER':
-        case 'tasmota/infrarotheizung/stat/RESULT':
-        case 'tasmota/infrarotheizung/tele/INFO1':
-        case 'tasmota/infrarotheizung/tele/INFO2':
-        case 'tasmota/infrarotheizung/tele/INFO3':
-        case 'tasmota/infrarotheizung/tele/LWT':
-        case 'tasmota/infrarotheizung/tele/SENSOR':
-        case 'tasmota/infrarotheizung/tele/STATE':
+        case 'tasmota/heizstab/cmnd/POWER':
+        case 'tasmota/heizstab/stat/POWER':
+        case 'tasmota/heizstab/stat/RESULT':
+        case 'tasmota/heizstab/tele/INFO1':
+        case 'tasmota/heizstab/tele/INFO2':
+        case 'tasmota/heizstab/tele/INFO3':
+        case 'tasmota/heizstab/tele/LWT':
+        case 'tasmota/heizstab/tele/SENSOR':
+        case 'tasmota/heizstab/tele/STATE':
+        case 'tasmota/infrarotheizung-buero/cmnd/Power':
+        case 'tasmota/infrarotheizung-buero/cmnd/POWER':
+        case 'tasmota/infrarotheizung-buero/cmnd/PulseTime':
+        case 'tasmota/infrarotheizung-buero/stat/POWER':
+        case 'tasmota/infrarotheizung-buero/stat/RESULT':
+        case 'tasmota/infrarotheizung-buero/tele/INFO1':
+        case 'tasmota/infrarotheizung-buero/tele/INFO2':
+        case 'tasmota/infrarotheizung-buero/tele/INFO3':
+        case 'tasmota/infrarotheizung-buero/tele/LWT':
+        case 'tasmota/infrarotheizung-buero/tele/SENSOR':
+        case 'tasmota/infrarotheizung-buero/tele/STATE':
+        case 'tasmota/infrarotheizung-schlafzimmer/cmnd/Power':
+        case 'tasmota/infrarotheizung-schlafzimmer/cmnd/PulseTime':
+        case 'tasmota/infrarotheizung-schlafzimmer/stat/POWER':
+        case 'tasmota/infrarotheizung-schlafzimmer/stat/RESULT':
+        case 'tasmota/infrarotheizung-schlafzimmer/tele/INFO1':
+        case 'tasmota/infrarotheizung-schlafzimmer/tele/INFO2':
+        case 'tasmota/infrarotheizung-schlafzimmer/tele/INFO3':
+        case 'tasmota/infrarotheizung-schlafzimmer/tele/LWT':
+        case 'tasmota/infrarotheizung-schlafzimmer/tele/SENSOR':
+        case 'tasmota/infrarotheizung-schlafzimmer/tele/STATE':
         case 'tasmota/jalousieBuero/cmnd/POWER':
         case 'tasmota/jalousieBuero/cmnd/Power1':
         case 'tasmota/jalousieBuero/cmnd/Power2':
+        case 'tasmota/jalousieBuero/cmnd/PulseTime1':
+        case 'tasmota/jalousieBuero/cmnd/PulseTime2':
         case 'tasmota/jalousieBuero/stat/POWER1':
         case 'tasmota/jalousieBuero/stat/POWER2':
         case 'tasmota/jalousieBuero/stat/RESULT':
@@ -357,6 +384,7 @@ const sound = async function(tone) {
         case 'volumio/cmnd/pause':
         case 'volumio/cmnd/play':
         case 'volumio/cmnd/playPause':
+        case 'volumio/cmnd/toggle':
         case 'volumio/cmnd/volume':
         case 'Wallbox/authentication/config':
         case 'Wallbox/charge_manager/available_current':
