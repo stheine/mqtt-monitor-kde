@@ -1,33 +1,28 @@
 #!/usr/bin/env node
 
-import {setTimeout as delay} from 'timers/promises';
-import {fileURLToPath}       from 'url';
-import path                  from 'path';
-import readline              from 'readline';
+import {setTimeout as delay} from 'node:timers/promises';
+import {fileURLToPath}       from 'node:url';
+import os                    from 'node:os';
+import path                  from 'node:path';
+import readline              from 'node:readline';
 
-import _            from 'lodash';
-import {execa}      from 'execa';
-import fsExtra      from 'fs-extra';
-import imaps        from '@klenty/imap';
-import mqtt         from 'async-mqtt';
-import ms           from 'ms';
-import npid         from 'npid';
-import untildify    from 'untildify';
-import windowSize   from 'window-size';
+import {execa}               from 'execa';
+import fsExtra               from 'fs-extra';
+import mqtt                  from 'async-mqtt';
+import ms                    from 'ms';
+import npid                  from 'npid';
+import untildify             from 'untildify';
+import windowSize            from 'window-size';
 
-import {connect}    from './vpn.js';
-import logger       from './logger.js';
-import {sendMail}   from './mail.js';
-
-import imapConfig   from '/mnt/qnap_linux/data/imap/config.js';
+import logger                from './logger.js';
 
 // ###########################################################################
 // Globals
 
 /* eslint-disable no-underscore-dangle */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const hostname  = os.hostname();
 
-let imapClient;
 let mqttClient;
 // let previousWasserValue;
 
@@ -35,10 +30,6 @@ let mqttClient;
 // Process handling
 
 const stopProcess = async function() {
-  if(imapClient) {
-    imapClient.end();
-    imapClient = undefined;
-  }
   if(mqttClient) {
     await mqttClient.end();
     mqttClient = undefined;
@@ -113,7 +104,7 @@ const sound = async function(tone) {
 
   // #########################################################################
   // Init MQTT connection
-  mqttClient = await mqtt.connectAsync('tcp://192.168.6.7:1883');
+  mqttClient = await mqtt.connectAsync('tcp://192.168.6.5:1883', {clientId: `${hostname} mqtt.js`});
 
   mqttClient.on('connect', () => logger.info('mqtt.connect'));
   mqttClient.on('reconnect', () => logger.info('mqtt.reconnect'));
@@ -124,7 +115,9 @@ const sound = async function(tone) {
   mqttClient.on('end', () => logger.info('mqtt.end'));
 
   mqttClient.on('message', async(topic, messageBuffer) => {
-    if(topic.startsWith('tasmota/discovery/')) {
+    if(topic.startsWith('tasmota/discovery/') ||
+      topic.startsWith('Wallbox/')
+    ) {
       return;
     }
 
@@ -157,7 +150,11 @@ const sound = async function(tone) {
         case 'esp32-wasser/zaehlerstand/connection':
         case 'esp32-wasser/zaehlerstand/CPUtemp':
         case 'esp32-wasser/zaehlerstand/freeMem':
+        case 'esp32-wasser/zaehlerstand/hostname':
+        case 'esp32-wasser/zaehlerstand/interval':
+        case 'esp32-wasser/zaehlerstand/IP':
         case 'esp32-wasser/zaehlerstand/json':
+        case 'esp32-wasser/zaehlerstand/MAC':
         case 'esp32-wasser/zaehlerstand/rate':
         case 'esp32-wasser/zaehlerstand/rate_per_digitalization_round':
         case 'esp32-wasser/zaehlerstand/rate_per_time_unit':
@@ -185,6 +182,8 @@ const sound = async function(tone) {
         case 'JalousieBackend/tele/STATUS':
         case 'JalousieBackend/tele/TIMES':
         case 'maxSun/INFO':
+        case 'muell/leerung/morgen':
+        case 'muell/leerung/naechste':
         case 'octoPrint/event/ClientClosed':
         case 'octoPrint/event/ClientOpened':
         case 'octoPrint/event/Connected':
@@ -256,10 +255,15 @@ const sound = async function(tone) {
         case 'tasmota/fahrradlader/tele/SENSOR':
         case 'tasmota/fahrradlader/tele/STATE':
         case 'tasmota/fahrradlader/tele/LWT':
+        case 'tasmota/fenstermotor-heizungskeller/cmnd/POWER':
         case 'tasmota/fenstermotor-heizungskeller/cmnd/Power1':
         case 'tasmota/fenstermotor-heizungskeller/cmnd/Power2':
         case 'tasmota/fenstermotor-heizungskeller/stat/POWER1':
         case 'tasmota/fenstermotor-heizungskeller/stat/POWER2':
+        case 'tasmota/fenstermotor-heizungskeller/stat/RESULT':
+        case 'tasmota/fenstermotor-heizungskeller/tele/INFO1':
+        case 'tasmota/fenstermotor-heizungskeller/tele/INFO2':
+        case 'tasmota/fenstermotor-heizungskeller/tele/INFO3':
         case 'tasmota/fenstermotor-heizungskeller/tele/LWT':
         case 'tasmota/fenstermotor-heizungskeller/tele/STATE':
         case 'tasmota/haustürklingel/cmnd/POWER':
@@ -291,6 +295,7 @@ const sound = async function(tone) {
         case 'tasmota/infrarotheizung-buero/tele/SENSOR':
         case 'tasmota/infrarotheizung-buero/tele/STATE':
         case 'tasmota/infrarotheizung-schlafzimmer/cmnd/Power':
+        case 'tasmota/infrarotheizung-schlafzimmer/cmnd/POWER':
         case 'tasmota/infrarotheizung-schlafzimmer/cmnd/PulseTime':
         case 'tasmota/infrarotheizung-schlafzimmer/stat/POWER':
         case 'tasmota/infrarotheizung-schlafzimmer/stat/RESULT':
@@ -386,84 +391,6 @@ const sound = async function(tone) {
         case 'volumio/cmnd/playPause':
         case 'volumio/cmnd/toggle':
         case 'volumio/cmnd/volume':
-        case 'Wallbox/authentication/config':
-        case 'Wallbox/charge_manager/available_current':
-        case 'Wallbox/charge_manager/config':
-        case 'Wallbox/charge_manager/config_modified':
-        case 'Wallbox/charge_manager/state':
-        case 'Wallbox/charge_tracker/config':
-        case 'Wallbox/charge_tracker/config_modified':
-        case 'Wallbox/charge_tracker/current_charge':
-        case 'Wallbox/charge_tracker/last_charges':
-        case 'Wallbox/charge_tracker/state':
-        case 'Wallbox/ethernet/config':
-        case 'Wallbox/ethernet/config_modified':
-        case 'Wallbox/ethernet/state':
-        case 'Wallbox/evse/auto_start_charging':
-        case 'Wallbox/evse/button_configuration':
-        case 'Wallbox/evse/button_state':
-        case 'Wallbox/evse/control_pilot_configuration':
-        case 'Wallbox/evse/control_pilot_connected':
-        case 'Wallbox/evse/energy_meter_state':
-        case 'Wallbox/evse/energy_meter_values':
-        case 'Wallbox/evse/gpio_configuration':
-        case 'Wallbox/evse/dc_fault_current_state':
-        case 'Wallbox/evse/external_clear_on_disconnect':
-        case 'Wallbox/evse/external_current':
-        case 'Wallbox/evse/external_defaults':
-        case 'Wallbox/evse/external_enabled':
-        case 'Wallbox/evse/global_current':
-        case 'Wallbox/evse/hardware_configuration':
-        case 'Wallbox/evse/indicator_led':
-        case 'Wallbox/evse/low_level_state':
-        case 'Wallbox/evse/managed':
-        case 'Wallbox/evse/management_current':
-        case 'Wallbox/evse/management_enabled':
-        case 'Wallbox/evse/max_charging_current':
-        case 'Wallbox/evse/modbus_tcp_enabled':
-        case 'Wallbox/evse/ocpp_enabled':
-        case 'Wallbox/evse/slots':
-        case 'Wallbox/evse/state':
-        case 'Wallbox/evse/user_current':
-        case 'Wallbox/evse/user_enabled':
-        case 'Wallbox/info/display_name':
-        case 'Wallbox/info/display_name_modified':
-        case 'Wallbox/info/features':
-        case 'Wallbox/info/last_boots':
-        case 'Wallbox/info/modules':
-        case 'Wallbox/info/name':
-        case 'Wallbox/info/version':
-        case 'Wallbox/meter/all_values':
-        case 'Wallbox/meter/detailed_values':
-        case 'Wallbox/meter/error_counters':
-        case 'Wallbox/meter/last_reset':
-        case 'Wallbox/meter/phases':
-        case 'Wallbox/meter/state':
-        case 'Wallbox/meter/values':
-        case 'Wallbox/modbus_tcp/config':
-        case 'Wallbox/modbus_tcp/config_modified':
-        case 'Wallbox/modules':
-        case 'Wallbox/mqtt/config':
-        case 'Wallbox/mqtt/config_modified':
-        case 'Wallbox/mqtt/state':
-        case 'Wallbox/network/config':
-        case 'Wallbox/network/config_modified':
-        case 'Wallbox/nfc/config':
-        case 'Wallbox/nfc/config_modified':
-        case 'Wallbox/nfc/seen_tags':
-        case 'Wallbox/ntp/config':
-        case 'Wallbox/ntp/config_modified':
-        case 'Wallbox/ntp/state':
-        case 'Wallbox/users/config':
-        case 'Wallbox/version':
-        case 'Wallbox/wifi/ap_config':
-        case 'Wallbox/wifi/ap_config_modified':
-        case 'Wallbox/wifi/sta_config':
-        case 'Wallbox/wifi/sta_config_modified':
-        case 'Wallbox/wifi/state':
-        case 'Wallbox/wireguard/config_modified':
-        case 'Wallbox/wireguard/config':
-        case 'Wallbox/wireguard/state':
         case 'wetter/dwd/INFO':
         case 'wetter/openweather/INFO':
         case 'Wind/tele/SENSOR':
@@ -615,66 +542,6 @@ const sound = async function(tone) {
   });
 
   await mqttClient.subscribe('#');
-
-  // #########################################################################
-  // Connect to mail server to handle incoming mail
-  const {host, password, port, user} = imapConfig;
-
-  try {
-    imapClient = await imaps.connect({
-      imap: {
-    //        debug:       console.log,
-        user,
-        password,
-        host,
-        port,
-        tls:         true,
-        authTimeout: 25000,
-        connTimeout: 1000,
-      },
-      async onmail() {
-        const mails = await imapClient.search(['UNSEEN'], {bodies: ['HEADER', 'TEXT'], markSeen: true});
-
-        if(!mails.length) {
-          return;
-        }
-
-        logger.debug('OnMail event');
-
-      // logger.debug({mails});
-        for(const mail of mails) {
-          const {parts} = mail;
-          const header = _.find(parts, {which: 'HEADER'}).body;
-          const from = header.from.join(',');
-          const subject = header.subject.join(',');
-          const to = header.to.join(',');
-          const token = _.find(parts, {which: 'TEXT'}).body.trim();
-
-          logger.debug({from, to, subject, token});
-
-          const {ip} = await connect({token});
-
-          await sendMail({
-            to:      from,
-            subject: `VPN connected on ${ip}`,
-            html:    `
-              <p>VPN connected on ${ip}</p>
-            `,
-          });
-        }
-      },
-    });
-
-    await imapClient.openBox('INBOX');
-  } catch(err) {
-    logger.error('Failed to connect IMAP:', err.message);
-
-    setTimeout(() => {
-      logger.info('Stop to trigger IMAP reconnect');
-
-      stopProcess();
-    }, ms('1 hour'));
-  }
 
   // #########################################################################
   // Blank screen on Enter
